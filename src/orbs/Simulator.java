@@ -32,12 +32,36 @@ public class Simulator {
 	}
 
 	private void mainLoop() {
+
+		setNeighbors();
 		
-		for(;;){
+		for(;;){			
+			runObjects();
+			
+			executeActions();
+		}
+		
+	}
+
+	private void executeActions() {
+	
+		for (GeometricObject obj : objects) {
+			
+			Action nextAction = obj.orb.nextAction;
+			if (nextAction.type == ActionType.NONE) {
+				continue;
+			}
+			
+			if (nextAction.type == ActionType.MOVE_TO) {
+				
+				
+				
+			}
+
 			setNeighbors();
 			
-			runObjects();
 		}
+		
 		
 	}
 
