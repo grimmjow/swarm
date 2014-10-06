@@ -6,7 +6,7 @@ public class GeometricObject {
 	double y;
 	int r;
 	Orb orb;
-	
+
 	public GeometricObject(double x, double y, int r, Orb orb) {
 		super();
 		this.x = x;
@@ -14,5 +14,5 @@ public class GeometricObject {
 		this.r = r;
 		this.orb = orb;
 	}
-	
+
 }
