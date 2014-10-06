@@ -2,12 +2,12 @@ package orbs;
 
 public class GeometricObject {
 
-	int x;
-	int y;
+	double x;
+	double y;
 	int r;
 	Orb orb;
 	
-	public GeometricObject(int x, int y, int r, Orb orb) {
+	public GeometricObject(double x, double y, int r, Orb orb) {
 		super();
 		this.x = x;
 		this.y = y;
