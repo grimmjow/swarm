@@ -18,37 +18,37 @@ public class Ui extends Frame {
 		setTitle("snurbs");
 		addWindowListener(new TestWindowListener());
 
-		add(new DrawingPanel(simulator, this));
+		add(new DrawingPanel(simulator));
 
 		setSize(500, 500);
 		setVisible(true);
+
+		addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				simulator.nextStep();
+				System.out.println("event");
+				getComponent(0).setVisible(false);
+				getComponent(0).setVisible(true);
+
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+		});
 	}
 
 	class DrawingPanel extends Panel {
 
-		Ui ui;
-
-		public DrawingPanel(final Simulator simulator, final Ui ui) {
+		public DrawingPanel(final Simulator simulator) {
 			super();
 			this.simulator = simulator;
-			this.ui = ui;
-			addKeyListener(new KeyListener() {
-
-				@Override
-				public void keyTyped(KeyEvent e) {
-					simulator.nextStep();
-					System.out.println("event");
-					ui.revalidate();
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyPressed(KeyEvent e) {
-				}
-			});
 		}
 
 
@@ -60,16 +60,11 @@ public class Ui extends Frame {
 			int offset = 250;
 			g.setColor(Color.BLACK);
 			for(GeometricObject go : simulator.objects) {
+				g.drawString(Integer.toString(go.id), (int)go.x+offset-2, (int)go.y+offset+4);
 				g.drawOval((int)go.x-go.r+offset, (int)go.y-go.r+offset, go.r*2, go.r*2);
 			}
 			System.out.println("painted black");
 
-		}
-
-		@Override
-		public void update(Graphics g) {
-			super.update(g);
-			paint(g);
 		}
 
 	}

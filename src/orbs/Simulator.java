@@ -35,9 +35,9 @@ public class Simulator {
 		Orb motherOrb = new Orb(new Sensor(100));
 		motherOrb.setMother(true);
 
-		objects.add(new GeometricObject(0, 0, 20, motherOrb));
+		objects.add(new GeometricObject(0, 0, 0, 20, motherOrb));
 		for(int i=0;i<10;i++) {
-			objects.add(new GeometricObject(30+(i*20), 0, 10, new Orb(new Sensor((100.0 / (i+10))))));
+			objects.add(new GeometricObject(i+1, 30+(i*20), 0, 10, new Orb(new Sensor((100.0 / (i+10))))));
 		}
 
 		setNeighbors();
@@ -149,13 +149,13 @@ public class Simulator {
 			Target target = new Target();
 			target.x = staticObj.x + (a / d * dx - h / d * dy);
 		    target.y = staticObj.y + (a / d * dy + h / d * dx);
-		    target.distance = getDistance(movingObj, new GeometricObject(target.x, target.y, 0, null));
+		    target.distance = getDistance(movingObj, new GeometricObject(0, target.x, target.y, 0, null));
 		    targets.put(target.distance, target);
 
 		    target = new Target();
 			target.x = staticObj.x + (a / d * dx + h / d * dy);
 		    target.y = staticObj.y + (a / d * dy - h / d * dx);
-		    target.distance = getDistance(movingObj, new GeometricObject(target.x, target.y, 0, null));
+		    target.distance = getDistance(movingObj, new GeometricObject(0, target.x, target.y, 0, null));
 		    targets.put(target.distance, target);
 		}
 
