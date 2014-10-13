@@ -4,19 +4,21 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 public class Simulator {
 
 	List<GeometricObject> objects = new ArrayList<>();
-	private final static double JITTER = 0.1;
+	private final static double JITTER = 0.001;
+	private int executingObject = 0;
 
 	private class Target {
 		public double x;
 		public double y;
 		public double distance;
+		public GeometricObject obj;
 	}
 
 	public static void main(String[] args) {
@@ -35,15 +37,16 @@ public class Simulator {
 		Orb motherOrb = new Orb(new Sensor(100));
 		motherOrb.setMother(true);
 
-		objects.add(new GeometricObject(0, 0, 0, 20, motherOrb));
-		for(int i=0;i<10;i++) {
-			objects.add(new GeometricObject(i+1, 30+(i*20), 0, 10, new Orb(new Sensor((100.0 / (i+10))))));
+		objects.add(new GeometricObject(0, 0, 0, 50, motherOrb));
+		for(int i=0;i<6;i++) {
+			objects.add(new GeometricObject(i+1, 75+(i*50), 0, 25, new Orb(new Sensor((100.0 / (i+25))))));
 		}
 
 		setNeighbors();
 	}
 
 	public void nextStep() {
+
 		runObjects();
 		executeActions();
 
@@ -60,32 +63,41 @@ public class Simulator {
 	private void executeActionMoveTo(GeometricObject movingObj) {
 
 		GeometricObject staticGeo = getGeoObject(movingObj.orb.nextAction.target);
+		double range = staticGeo.r + movingObj.r*2;
 
-		Map<Double,Target> targets = getTargets(staticGeo, movingObj);
+		List<Target> targets = getTargets(staticGeo, movingObj);
 
-		int count = 0;
-		for (Map.Entry<Double, Target> entry : targets.entrySet()) {
-			if (count > 1) {
-				break;
+		for (Target target : targets) {
+
+			if (target.distance < JITTER || isCrossing(movingObj, target.x, target.y)) {
+				continue;
 			}
 
-			if (entry.getKey() > JITTER) {
-				moveObject(movingObj, entry.getValue().x, entry.getValue().y, new ArrayList<GeometricObject>());
+			boolean collision = false;
+			//TODO: Objekte im Weg finden
+
+			if (!collision) {
+				moveObject(movingObj, target.x, target.y, new ArrayList<GeometricObject>());
 				break;
 			}
-
-			count++;
 		}
 
 	}
 
+	/**
+	 * Schaut nach, ob sich obj an der Zielkoordinate mit anderen Objekten schneidet
+	 * @param obj wird ignoriert
+	 * @param x absolute X Zielkoordinate
+	 * @param y absolute Y Zielkoordinate
+	 * @return
+	 */
 	private boolean isCrossing(GeometricObject obj, double x, double y) {
 
 		for (GeometricObject geo : objects) {
 			if (geo == obj) {
 				continue;
 			}
-			if (getDistance(geo, obj) < geo.r + obj.r) {
+			if (getDistance(geo.x, geo.y, x, y) + JITTER < geo.r + obj.r) {
 				return true;
 			}
 		}
@@ -93,10 +105,23 @@ public class Simulator {
 		return false;
 	}
 
+	/**
+	 *
+	 * @param movingObj
+	 * @param x Absolute Zielkoordinate
+	 * @param y
+	 * @param alreadyMoved
+	 */
 	private void moveObject(GeometricObject movingObj, double x, double y, List<GeometricObject> alreadyMoved) {
 
-		double deltaX = movingObj.x - x;
-		double deltaY = movingObj.y - y;
+		if (movingObj.orb.mother) {
+			return;
+		}
+
+		double deltaX = x - movingObj.x;
+		double deltaY = y - movingObj.y;
+
+		System.out.println(movingObj.id + " " + deltaX + ":" + deltaY);
 
 		movingObj.x = x;
 		movingObj.y = y;
@@ -105,35 +130,53 @@ public class Simulator {
 		for (Orb orb : movingObj.orb.sensor.neighbors) {
 			GeometricObject neighbor = getGeoObject(orb);
 			// Wurde zurück gelassen
-			if (!alreadyMoved.contains(neighbor) && getDistance(movingObj, neighbor) > movingObj.r + neighbor.r + JITTER) {
-				moveNeighbors(deltaX, deltaY, movingObj, neighbor, alreadyMoved);
+			if (!alreadyMoved.contains(neighbor) && orb.sensor.motherDistance < movingObj.orb.sensor.motherDistance) {
+				moveNeighbor(deltaX, deltaY, movingObj, neighbor, alreadyMoved);
 			}
 		}
 	}
 
-	private void moveNeighbors(double deltaX, double deltaY, GeometricObject targetObj, GeometricObject movingObj, List<GeometricObject> alreadyMoved) {
+	/**
+	 *
+	 * @param deltaX
+	 * @param deltaY
+	 * @param targetObj hat sich gerade bewegt
+	 * @param movingObj soll sich mit bewegen
+	 * @param alreadyMoved
+	 */
+	private void moveNeighbor(double deltaX, double deltaY, GeometricObject targetObj, GeometricObject movingObj, List<GeometricObject> alreadyMoved) {
 
+		System.out.println("moveNeighbour " + movingObj.id);
 		if (!isCrossing(movingObj, movingObj.x + deltaX, movingObj.y + deltaY)) {
 			moveObject(movingObj,  movingObj.x + deltaX, movingObj.y + deltaY, alreadyMoved);
+			System.out.println(movingObj.id + " not crossing");
 		} else {
-			Map<Double,Target> targets = getTargets(targetObj, movingObj);
+			System.out.println(movingObj.id + " crossing");
+			List<Target> targets = getTargets(targetObj, movingObj);
 
-			for(Map.Entry<Double,Target> entry : targets.entrySet()) {
-				if (!isCrossing(movingObj, entry.getValue().x, entry.getValue().y)) {
-					moveObject(movingObj,  entry.getValue().x, entry.getValue().y, alreadyMoved);
+			for(Target entry : targets) {
+				if (!isCrossing(movingObj, entry.x, entry.y)) {
+					moveObject(movingObj,  entry.x, entry.y, alreadyMoved);
+					break;
 				}
 			}
 		}
 
 	}
 
-	private Map<Double,Target> getTargets(GeometricObject staticObj, GeometricObject movingObj) {
+	/**
+	 *
+	 * @param staticObj
+	 * @param movingObj
+	 * @return
+	 */
+	private List<Target> getTargets(GeometricObject staticObj, GeometricObject movingObj) {
 		double range = staticObj.r + movingObj.r*2;
-		Map<Double,Target> targets = new HashMap<Double, Target>();
+		List<Target> targets = new ArrayList<Target>();
 
 		for (GeometricObject geoObj : objects) {
 			// nicht kollidierende ignorieren
-			if (geoObj == staticObj || geoObj == movingObj || getDistance(staticObj, geoObj) >= range + geoObj.r) {
+			if (geoObj == staticObj || geoObj == movingObj || getDistance(staticObj, geoObj) > range + geoObj.r) {
 				continue;
 			}
 
@@ -149,36 +192,51 @@ public class Simulator {
 			Target target = new Target();
 			target.x = staticObj.x + (a / d * dx - h / d * dy);
 		    target.y = staticObj.y + (a / d * dy + h / d * dx);
-		    target.distance = getDistance(movingObj, new GeometricObject(0, target.x, target.y, 0, null));
-		    targets.put(target.distance, target);
+		    target.distance = getDistance(movingObj.x, movingObj.y, target.x, target.y);
+		    target.obj = geoObj;
+		    targets.add(target);
 
 		    target = new Target();
 			target.x = staticObj.x + (a / d * dx + h / d * dy);
 		    target.y = staticObj.y + (a / d * dy - h / d * dx);
-		    target.distance = getDistance(movingObj, new GeometricObject(0, target.x, target.y, 0, null));
-		    targets.put(target.distance, target);
+		    target.distance = getDistance(movingObj.x, movingObj.y, target.x, target.y);
+		    target.obj = geoObj;
+		    targets.add(target);
 		}
+
+		Collections.sort(targets, new Comparator<Target>() {
+			@Override
+			public int compare(Target o1, Target o2) {
+				return (int)((o1.distance - o2.distance)*1000);
+			}
+		});
 
 		return targets;
 	}
 
 	private void executeActions() {
 
-		for (GeometricObject obj : objects) {
+		executingObject++;
 
-			Action nextAction = obj.orb.nextAction;
-			if (nextAction.type == ActionType.NONE) {
-				continue;
-			}
-
-			if (nextAction.type == ActionType.MOVE_TO) {
-				executeActionMoveTo(obj);
-			}
-
-			setNeighbors();
-
+		if (executingObject >= objects.size()) {
+			executingObject = 0;
 		}
 
+		GeometricObject obj = objects.get(executingObject);
+
+		Action nextAction = obj.orb.nextAction;
+
+		System.out.println("execute:" + executingObject);
+
+		if (nextAction.type == ActionType.NONE) {
+			return;
+		}
+
+		if (nextAction.type == ActionType.MOVE_TO) {
+			executeActionMoveTo(obj);
+		}
+
+		setNeighbors();
 
 	}
 
@@ -225,6 +283,10 @@ public class Simulator {
 	}
 
 	private double getDistance(GeometricObject geo1, GeometricObject geo2) {
-		return sqrt(pow(geo1.x - geo2.x, 2) + pow(geo1.y - geo2.y, 2));
+		return getDistance(geo1.x, geo1.y, geo2.x, geo2.y);
+	}
+
+	private double getDistance(double x1, double y1, double x2, double y2) {
+		return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 	}
 }

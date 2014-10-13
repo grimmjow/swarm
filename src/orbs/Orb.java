@@ -12,7 +12,11 @@ public class Orb {
 
 	public void run() {
 
-		sensor.calcMotherDistance();
+		if (!mother) {
+
+			sensor.calcMotherDistance();
+
+		}
 
 		nextAction = getNextAction();
 

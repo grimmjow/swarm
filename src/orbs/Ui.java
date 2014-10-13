@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Panel;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -18,37 +18,48 @@ public class Ui extends Frame {
 		setTitle("snurbs");
 		addWindowListener(new TestWindowListener());
 
-		add(new DrawingPanel(simulator));
+		add(new DrawingPanel(simulator, this));
 
-		setSize(500, 500);
+		setSize(800, 800);
 		setVisible(true);
-
-		addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-				simulator.nextStep();
-				System.out.println("event");
-				getComponent(0).setVisible(false);
-				getComponent(0).setVisible(true);
-
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-			}
-		});
 	}
 
 	class DrawingPanel extends Panel {
 
-		public DrawingPanel(final Simulator simulator) {
+		private Ui ui;
+
+		public DrawingPanel(final Simulator simulator, final Ui ui) {
 			super();
 			this.simulator = simulator;
+			this.ui = ui;
+
+			addMouseListener(new MouseListener() {
+
+				@Override
+				public void mouseReleased(MouseEvent arg0) {
+				}
+
+				@Override
+				public void mousePressed(MouseEvent arg0) {
+
+					simulator.nextStep();
+					ui.getComponent(0).setVisible(false);
+					ui.getComponent(0).setVisible(true);
+
+				}
+
+				@Override
+				public void mouseExited(MouseEvent arg0) {
+				}
+
+				@Override
+				public void mouseEntered(MouseEvent arg0) {
+				}
+
+				@Override
+				public void mouseClicked(MouseEvent arg0) {
+				}
+			});
 		}
 
 
@@ -57,13 +68,12 @@ public class Ui extends Frame {
 		@Override
 		public void paint(Graphics g) {
 
-			int offset = 250;
+			int offset = 400;
 			g.setColor(Color.BLACK);
 			for(GeometricObject go : simulator.objects) {
 				g.drawString(Integer.toString(go.id), (int)go.x+offset-2, (int)go.y+offset+4);
 				g.drawOval((int)go.x-go.r+offset, (int)go.y-go.r+offset, go.r*2, go.r*2);
 			}
-			System.out.println("painted black");
 
 		}
 
