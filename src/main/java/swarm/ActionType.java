@@ -1,4 +1,4 @@
-package orbs;
+package swarm;
 
 public enum ActionType {
 

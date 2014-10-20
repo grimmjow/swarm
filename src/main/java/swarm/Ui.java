@@ -1,4 +1,4 @@
-package orbs;
+package swarm;
 
 import java.awt.Color;
 import java.awt.Frame;

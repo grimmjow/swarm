@@ -1,4 +1,4 @@
-package orbs;
+package swarm;
 
 import static java.lang.Math.atan2;
 import static java.lang.Math.pow;
@@ -33,7 +33,7 @@ public class Simulator {
 		motherOrb.setMother(true);
 
 		objects.add(new GeometricObject(0, 0, 0, 50, motherOrb));
-		for(int i=0;i<6;i++) {
+		for(int i=0;i<10;i++) {
 			objects.add(new GeometricObject(i+1, 75+(i*50), 0, 25, new Orb(new Sensor((100.0 / (i+25))))));
 		}
 
