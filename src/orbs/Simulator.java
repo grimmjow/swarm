@@ -1,5 +1,6 @@
 package orbs;
 
+import static java.lang.Math.atan2;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
@@ -12,14 +13,8 @@ public class Simulator {
 
 	List<GeometricObject> objects = new ArrayList<>();
 	private final static double JITTER = 0.001;
-	private int executingObject = 0;
-
-	private class Target {
-		public double x;
-		public double y;
-		public double distance;
-		public GeometricObject obj;
-	}
+	public int executingObject = 0;
+	public List<Target> lastTargets;
 
 	public static void main(String[] args) {
 
@@ -66,6 +61,7 @@ public class Simulator {
 		double range = staticGeo.r + movingObj.r*2;
 
 		List<Target> targets = getTargets(staticGeo, movingObj);
+		lastTargets = targets;
 
 		for (Target target : targets) {
 
@@ -73,15 +69,48 @@ public class Simulator {
 				continue;
 			}
 
-			boolean collision = false;
-			//TODO: Objekte im Weg finden
-
-			if (!collision) {
+			if (!isColliding(movingObj, staticGeo, target)) {
 				moveObject(movingObj, target.x, target.y, new ArrayList<GeometricObject>());
 				break;
 			}
 		}
 
+	}
+
+	private double fixAngle(double a, double offset) {
+		return (Math.toDegrees(a - offset) + 360) % 360;
+	}
+
+	/**
+	 *
+	 * @param movingObj = soll zu target bewegt werden
+	 * @param staticGeo = um dieses soll sich bewegt werden
+	 * @param target = wissn schon
+	 * @return
+	 */
+	private boolean isColliding(GeometricObject movingObj, GeometricObject staticGeo, Target target) {
+		boolean collidingPositive = false;
+		boolean collidingNegative = false;
+
+		double targetOffset = atan2(target.x - staticGeo.x, target.y - staticGeo.y);
+		double movingAngle = fixAngle(atan2(movingObj.x - staticGeo.x, movingObj.y - staticGeo.y), targetOffset);
+
+		for (GeometricObject geo : objects) {
+			if (getDistance(staticGeo, geo) + JITTER > staticGeo.r + movingObj.r*2 + geo.r
+				|| geo == movingObj
+				|| geo == staticGeo) {
+				continue;
+			}
+
+			double angle = fixAngle(atan2(geo.x - staticGeo.x, geo.y - staticGeo.y), targetOffset);
+			if (angle < movingAngle) {
+				collidingNegative = true;
+			} else {
+				collidingPositive = true;
+			}
+		}
+
+		return collidingPositive && collidingNegative;
 	}
 
 	/**
