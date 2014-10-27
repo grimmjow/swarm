@@ -37,21 +37,24 @@ public class Main {
 	    dynamicsWorld.setGravity(new Vector3f(0, -10, 0));
 
 
-	    CollisionShape groundShape = new StaticPlaneShape(new Vector3f(0, 1, 0), 1);
+	    CollisionShape groundShape = new StaticPlaneShape(new Vector3f(0, 1, 0), 0.25f);
 	    CollisionShape fallShape = new SphereShape(1);
 
 
-	    DefaultMotionState groundMotionState = new DefaultMotionState(new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), new Vector3f(0, -1, 0), 0)));
-	    RigidBody groundRigidBody = new RigidBody(new RigidBodyConstructionInfo(0, groundMotionState, groundShape, new Vector3f(0, 0, 0)));
+	    DefaultMotionState groundMotionState = new DefaultMotionState(new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), new Vector3f(0, 0, 0), 1)));
+	    RigidBodyConstructionInfo groundRigidBodyCI = new RigidBodyConstructionInfo(0, groundMotionState, groundShape, new Vector3f(0, 0, 0));
+	    groundRigidBodyCI.restitution = 0.5f;
+	    RigidBody groundRigidBody = new RigidBody(groundRigidBodyCI);
 
 	    dynamicsWorld.addRigidBody(groundRigidBody);
 
-	    DefaultMotionState fallMotionState = new DefaultMotionState(new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), new Vector3f(0, 50, 0), 0)));
+	    DefaultMotionState fallMotionState = new DefaultMotionState(new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), new Vector3f(0, 50, 0), 1)));
 
 	    Vector3f fallInertia = new Vector3f(0, 0, 0);
         fallShape.calculateLocalInertia(1F, fallInertia);
 
         RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(1, fallMotionState, fallShape, fallInertia);
+        fallRigidBodyCI.restitution = 0.75f;
         RigidBody fallRigidBody = new RigidBody(fallRigidBodyCI);
         dynamicsWorld.addRigidBody(fallRigidBody);
 
@@ -60,10 +63,7 @@ public class Main {
 
             dynamicsWorld.stepSimulation(1 / 60.f, 10);
 
-            Transform trans = new Transform();
-            fallRigidBody.getMotionState().getWorldTransform(trans);
-
-            System.out.println("sphere height: " + trans.origin.toString());
+            System.out.println("sphere height: " + fallRigidBody.getMotionState().getWorldTransform(new Transform()).origin);
         }
 	}
 
