@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 public class Box {
 
 	private float x, y, z, width, height, depth;
-	private float rx, ry, rz;
+	private float rx, ry, rz, rw;
 	private float[] backColor = {1f,0f,0f};  // Red
 	private float[] frontColor = {1f,1f,0f}; 
 	private float[] topColor = {1f,0f,1f};
@@ -30,9 +30,10 @@ public class Box {
 		{
 			
 			GL11.glTranslatef(x, y, z);
-			GL11.glRotatef(rx, 1, 0, 0);
-			GL11.glRotatef(ry, 0, 1, 0);
-			GL11.glRotatef(rz, 0, 0, 1);
+//			GL11.glRotatef(rx, 1, 0, 0);
+//			GL11.glRotatef(ry, 0, 1, 0);
+//			GL11.glRotatef(rz, 0, 0, 1);
+			GL11.glRotatef(rw, rx, ry, rz);
 			GL11.glBegin(GL11.GL_QUADS); 
 			{
 
@@ -151,4 +152,81 @@ public class Box {
 	public void setY(float y) {
 		this.y = y;
 	}
+
+	public float getX() {
+		return x;
+	}
+
+	public void setX(float x) {
+		this.x = x;
+	}
+
+	public float getZ() {
+		return z;
+	}
+
+	public void setZ(float z) {
+		this.z = z;
+	}
+
+	public float getY() {
+		return y;
+	}
+
+	public float getWidth() {
+		return width;
+	}
+
+	public void setWidth(float width) {
+		this.width = width;
+	}
+
+	public float getHeight() {
+		return height;
+	}
+
+	public void setHeight(float height) {
+		this.height = height;
+	}
+
+	public float getDepth() {
+		return depth;
+	}
+
+	public void setDepth(float depth) {
+		this.depth = depth;
+	}
+
+	public float getRx() {
+		return rx;
+	}
+
+	public void setRx(float rx) {
+		this.rx = rx;
+	}
+
+	public float getRy() {
+		return ry;
+	}
+
+	public void setRy(float ry) {
+		this.ry = ry;
+	}
+
+	public float getRz() {
+		return rz;
+	}
+
+	public void setRz(float rz) {
+		this.rz = rz;
+	}
+
+	public float getRw() {
+		return rw;
+	}
+
+	public void setRw(float wr) {
+		this.rw = wr;
+	}
+	
 }

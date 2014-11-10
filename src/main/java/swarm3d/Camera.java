@@ -58,5 +58,9 @@ public class Camera {
 	public void moveY(float amount) {
 		y += amount;
 	}
+
 	
+	public void moveZ(float amount) {
+		z += amount;
+	}	
 }
