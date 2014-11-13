@@ -35,7 +35,7 @@ public class Number extends Panel {
 						
 						rotation2.w += 10f;
 						try {
-							Thread.sleep(10);
+							Thread.sleep(50);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

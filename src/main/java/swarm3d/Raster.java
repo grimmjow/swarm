@@ -14,14 +14,14 @@ public class Raster implements Displayable {
 		for(float i=begin; i<width; i+=stepping) {
 			lines.add(new Line(new Position(begin, 0f, i), new Position(width, 0f, i), Color.DARK_GRAY));				
 		}
-
+		
 		lines.add(new Line(new Position(0f, begin, 0f), new Position(0f, width, 0f), Color.GREEN));
-		for(float i=begin; i<width; i+=stepping) {
+		for(float i=0; i<width; i+=stepping) {
 			lines.add(new Line(new Position(begin, i, 0f), new Position(width, i, 0f), Color.DARK_GRAY));		
 		}
 		
 		lines.add(new Line(new Position(0f, 0, begin), new Position(0f, 0, width), Color.BLUE));
-		for(float i=begin; i<width; i+=stepping) {
+		for(float i=0; i<width; i+=stepping) {
 			lines.add(new Line(new Position(0, i, begin), new Position(0, i, width), Color.DARK_GRAY));		
 		}	
 		

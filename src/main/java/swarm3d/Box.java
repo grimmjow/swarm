@@ -1,18 +1,22 @@
 package swarm3d;
 
+import java.nio.FloatBuffer;
+
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 public class Box implements Displayable {
 
 	private Position position;
 	private Dimension3d dimension;
-	private float rx, ry, rz, rw;
+	private float rx, ry, rz=1, rw;
 	private Color backColor = new Color(1f,0f,0f);  // Red
 	private Color frontColor = new Color(1f,1f,0f); 
 	private Color topColor = new Color(1f,0f,1f);
 	private Color bottomColor = new Color(0f,1f,0f); // Green
 	private Color leftColor = new Color(0f,1f,1f);  
 	private Color rightColor = new Color(0f,0f,1f); // blue
+	FloatBuffer transformationBuffer;
 
 	public Box(Position position, Dimension3d dimension) {
 		this.position = position;
@@ -24,8 +28,15 @@ public class Box implements Displayable {
 		GL11.glPushMatrix(); 
 		{
 			
-			position.bindPosition();
-			GL11.glRotatef(rw, rx, ry, rz);
+			if(transformationBuffer == null) {
+				position.bindPosition();
+//				GL11.glRotatef(rw, rx, ry, rz);    
+				GL11.glRotatef(rw, rx, 0.0f, 0.0f);
+			    GL11.glRotatef(rw, 0.0f, ry, 0.0f);
+			    GL11.glRotatef(rw, 0.0f, 0.0f, rz);
+			} else {
+				GL11.glMultMatrix(transformationBuffer);
+			}
 			GL11.glBegin(GL11.GL_QUADS); 
 			{
 
@@ -85,6 +96,70 @@ public class Box implements Displayable {
 		}
 		GL11.glPopMatrix();
 		
+	}
+
+	public Position getPosition() {
+		return position;
+	}
+
+	public void setPosition(Position position) {
+		this.position = position;
+	}
+
+	public Dimension3d getDimension() {
+		return dimension;
+	}
+
+	public void setDimension(Dimension3d dimension) {
+		this.dimension = dimension;
+	}
+
+	public Color getBackColor() {
+		return backColor;
+	}
+
+	public void setBackColor(Color backColor) {
+		this.backColor = backColor;
+	}
+
+	public Color getFrontColor() {
+		return frontColor;
+	}
+
+	public void setFrontColor(Color frontColor) {
+		this.frontColor = frontColor;
+	}
+
+	public Color getTopColor() {
+		return topColor;
+	}
+
+	public void setTopColor(Color topColor) {
+		this.topColor = topColor;
+	}
+
+	public Color getBottomColor() {
+		return bottomColor;
+	}
+
+	public void setBottomColor(Color bottomColor) {
+		this.bottomColor = bottomColor;
+	}
+
+	public Color getLeftColor() {
+		return leftColor;
+	}
+
+	public void setLeftColor(Color leftColor) {
+		this.leftColor = leftColor;
+	}
+
+	public Color getRightColor() {
+		return rightColor;
+	}
+
+	public void setRightColor(Color rightColor) {
+		this.rightColor = rightColor;
 	}
 
 	public void rotate(float rx, float ry, float rz) {
@@ -173,4 +248,13 @@ public class Box implements Displayable {
 		this.rw = wr;
 	}
 	
+	public void putTransformMatrix(float[] matrix) {
+		transformationBuffer.clear();
+		transformationBuffer.put(matrix);
+		transformationBuffer.flip();
+	}
+	
+	public void activatePhysics() {
+		transformationBuffer = BufferUtils.createFloatBuffer(32);
+	}
 }

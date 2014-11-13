@@ -1,5 +1,9 @@
 package swarm3d;
 
+import java.nio.FloatBuffer;
+
+import org.lwjgl.BufferUtils;
+import static org.lwjgl.opengl.GL11.*;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
@@ -33,7 +37,7 @@ public class Camera {
 		GL11.glRotatef(ry, 0, 1, 0);
 		GL11.glRotatef(rz, 0, 0, 1);
 		GL11.glTranslatef(x, y, z);
-
+		
 	}
 
 	public void move(float amount, int direction) {

@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -21,89 +23,70 @@ public class MainDisplay {
 	Camera camera;
 
 	List<Displayable> displayables = new ArrayList<>();
+	List<Displayable> physics = new ArrayList<>();
 	Texture texture;
-
+	Random random = new Random();
+	FloatBuffer position, ambient;
+	
 	public MainDisplay() throws LWJGLException, FileNotFoundException, IOException {
 
-		float r = 10;
-		float d = r*2;
-
-//		spheres.add(new MySphere(0, 0, 0, new float[] {0.5f, 0.5f, 0.5f}));
-//
-//		lines.add(new Line(d,0,0));
-//		lines.add(new Line(-d,0,0));
-//		lines.add(new Line((float) Math.sin(Math.toRadians(60))*d,0,-(float) Math.cos(Math.toRadians(60)*d)));
-//		lines.add(new Line((float) Math.sin(Math.toRadians(120))*d,0,-(float) Math.cos(Math.toRadians(120)*d)));
-
-//		lines.add(new Line(-d,-d,-d));
-//		lines.add(new Line(-d,d,d));
-//		lines.add(new Line(d,-d,d));
-//		lines.add(new Line(d,d,-d));
-
-//		spheres.add(new MySphere(r*2, r, 0, new float[] {0.8f, 0.8f, 0f}));
-//		spheres.add(new MySphere(-(r*2), r, 0, new float[] {0.7f, 0.7f, 0f}));
-//
-//		spheres.add(new MySphere(r, r, (float)(2*r*Math.sin(Math.toRadians(60))), new float[] {0f, 0.8f, 0.8f}));
-//		spheres.add(new MySphere(r, r, -(float)(2*r*Math.sin(Math.toRadians(60))), new float[] {0f, 0.7f, 0.7f}));
-//
-//		spheres.add(new MySphere(-r, r, (float)(2*r*Math.sin(Math.toRadians(60))), new float[] {0f, 0.8f, 0.8f}));
-//		spheres.add(new MySphere(-r, r, -(float)(2*r*Math.sin(Math.toRadians(60))), new float[] {0f, 0.7f, 0.7f}));
-//
-//		spheres.add(new MySphere(r, r*2+(r*2/6*(float)Math.sqrt(3)), r*2/6*(float)Math.sqrt(3), new float[] {0.7f, 0f, 0.7f}));
-
-//		lines.add(new Line(2*r, r, r, r, r + (float)Math.sqrt(3)*r, r));
-
+		for(int i=0;i<=1000;i++) {
+			addBox();
+		}
+		
+		float r=10f;
+		float yOffset=50;
 		// level 1
 		// row 1
-		displayables.add(new MySphere(new Position(2*r, 0, 0), new Color(0.8f, 0.8f, 0f)));
-		displayables.add(new MySphere(new Position(4*r, 0, 0), new Color(0.7f, 0.7f, 0f)));
-		displayables.add(new MySphere(new Position(6*r, 0, 0), new Color(0.7f, 0.7f, 0f)));
+		displayables.add(new MySphere(new Position(2*r, yOffset, 0), new Color(0.8f, 0.8f, 0f)));
+		displayables.add(new MySphere(new Position(4*r, yOffset, 0), new Color(0.7f, 0.7f, 0f)));
+		displayables.add(new MySphere(new Position(6*r, yOffset, 0), new Color(0.7f, 0.7f, 0f)));
 
 		// row 2
-		displayables.add(new MySphere(new Position(r, (float)Math.sqrt(3)*r, 0),   new Color(0.7f, 0.7f, 0.0f)));
-		displayables.add(new MySphere(new Position(3*r, (float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0.0f)));
-		displayables.add(new MySphere(new Position(5*r, (float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0.0f)));
+		displayables.add(new MySphere(new Position(r,   yOffset+(float)Math.sqrt(3)*r, 0),   new Color(0.7f, 0.7f, 0.0f)));
+		displayables.add(new MySphere(new Position(3*r, yOffset+(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0.0f)));
+		displayables.add(new MySphere(new Position(5*r, yOffset+(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0.0f)));
 
 		// row 3
-		displayables.add(new MySphere(new Position(r,   -(float)Math.sqrt(3)*r, 0),   new Color(0.7f, 0.7f, 0f)));
-		displayables.add(new MySphere(new Position(3*r, -(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0f)));
-		displayables.add(new MySphere(new Position(5*r, -(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0f)));
+		displayables.add(new MySphere(new Position(r,   yOffset+-(float)Math.sqrt(3)*r, 0),   new Color(0.7f, 0.7f, 0f)));
+		displayables.add(new MySphere(new Position(3*r, yOffset+-(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0f)));
+		displayables.add(new MySphere(new Position(5*r, yOffset+-(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0f)));
 
 		// level 2
 		// row 1
-		displayables.add(new MySphere(new Position(r,   (float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
-		displayables.add(new MySphere(new Position(3*r, (float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
-		displayables.add(new MySphere(new Position(5*r, (float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
+		displayables.add(new MySphere(new Position(r,   yOffset+(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
+		displayables.add(new MySphere(new Position(3*r, yOffset+(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
+		displayables.add(new MySphere(new Position(5*r, yOffset+(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
 
 		// row 2
-		displayables.add(new MySphere(new Position(2*r, 4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(4*r, 4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(6*r, 4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(2*r, yOffset+4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(4*r, yOffset+4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(6*r, yOffset+4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
 
 		// row 3
-		displayables.add(new MySphere(new Position(2*r, -(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
-		displayables.add(new MySphere(new Position(4*r, -(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
-		displayables.add(new MySphere(new Position(6*r, -(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
+		displayables.add(new MySphere(new Position(2*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
+		displayables.add(new MySphere(new Position(4*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
+		displayables.add(new MySphere(new Position(6*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
 
 		// level 0
 		// row 1
-		displayables.add(new MySphere(new Position(r,   (float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(3*r, (float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(5*r, (float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(r,   yOffset+(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(3*r, yOffset+(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(5*r, yOffset+(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
 
 		// row 2
-		displayables.add(new MySphere(new Position(2*r, 4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(4*r, 4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(6*r, 4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(2*r, yOffset+4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(4*r, yOffset+4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(6*r, yOffset+4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
 
 		// row 3
-		displayables.add(new MySphere(new Position(2*r, -(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(4*r, -(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(6*r, -(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(2*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(4*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
+		displayables.add(new MySphere(new Position(6*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
 
 		// x, y, z lines
-		displayables.add(new Raster(100, 5));
-		
+		displayables.add(new Raster(1000, 20));
+
 		displayables.add(new TimeDisplay(
 				new Position(0,150,-300), 
 				new Dimension2d(500, 150f), 
@@ -114,24 +97,25 @@ public class MainDisplay {
 				new Position(0,150,300), 
 				new Dimension2d(500, 150f), 
 				Color.GREEN,
-				new Rotation(180f, 0f, 1f, -0.25f)));
+				new Rotation(180f, 0f, 1f, -0.30f)));
 
-		displayables.add(new Box(new Position(0, 0, 0), new Dimension3d(10, 10, 10)));
-		
+		physics.add(new Box(new Position(-20f, 20, 0), new Dimension3d(5, 5, 5)));
+		physics.add(new Box(new Position(-15, 70, 0), new Dimension3d(15, 25, 5)));
+//		displayables.add(new Box(new Position(0, 0, 0), new Dimension3d(15, 25, 5)));
+		displayables.addAll(physics);
 		initDisplay();
 		
 		texture = TextureLoader.getTexture("png", new FileInputStream(new File("test.png")), GL11.GL_NEAREST);
 		float aspectRatio = (float)Display.getWidth()/ (float)Display.getHeight();
 		camera = new Camera(70, aspectRatio, 0.3f, 1000f);
-		camera.moveZ(-50);
+//		camera.moveZ(-50);
 		camera.moveY(-10);
 
 //		camera.moveY(-100);
 //		camera.rotateX(90f);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
-
-
+		
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -143,16 +127,15 @@ public class MainDisplay {
 
 	public void run() {
 
-//		PhysicThread physicThread = new PhysicThread(boxes);
-//
-//		physicThread.start();
+		PhysicThread physicThread = new PhysicThread(displayables);
+
+		physicThread.start();
 
 		while(!Display.isCloseRequested()) {
 
-//			physicThread.run();
-
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			GL11.glLoadIdentity();
+			
 			float speed=2.5f;
 			float mouseSpeed=0.2f;
 
@@ -182,14 +165,15 @@ public class MainDisplay {
 				camera.rotateY(-speed);
 			}
 
-			if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
-//				physicThread.issueStop();
-				Display.destroy();
-			}
-
 			if(Keyboard.isKeyDown(Keyboard.KEY_N)) {
 //				addBox();
 			}
+			
+			if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+				break;
+			}
+
+			
 			camera.rotateY(Mouse.getDX()*mouseSpeed);
 			camera.rotateX(Mouse.getDY()*-mouseSpeed);
 			camera.updateView();
@@ -211,13 +195,34 @@ public class MainDisplay {
 		}
 
 		Display.destroy();
-//		physicThread.issueStop();
+		physicThread.issueStop();
 	}
 
+	private void addBox() {
+		
+		float bigBox = 500;
+		float boxBox = 10f;
+		Box box = new Box(new Position(bigBox*random.nextFloat()*(random.nextBoolean()?1.0f:-1.0f), 
+				bigBox*random.nextFloat() + 10, 
+				bigBox*random.nextFloat()*(random.nextBoolean()?1.0f:-1.0f)),
+				new Dimension3d(
+				random.nextFloat()*boxBox, 
+				random.nextFloat()*boxBox, 
+				random.nextFloat()*boxBox));
+		box.setBackColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
+		box.setFrontColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
+		box.setLeftColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
+		box.setRightColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
+		box.setTopColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
+		box.setBottomColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
+		physics.add(box);
+	}	
+	
 	private void initDisplay() throws LWJGLException {
 		DisplayMode[] availableDisplayModes = Display.getAvailableDisplayModes();
 
 		for(DisplayMode displayMode : availableDisplayModes) {
+			System.out.println(displayMode);
 			if(displayMode.isFullscreenCapable() && displayMode.getWidth() == 1024) {
 				Display.setDisplayMode(displayMode);
 				break;

@@ -1,5 +1,8 @@
 package swarm3d;
 
+import java.nio.FloatBuffer;
+
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Sphere;
 
@@ -7,6 +10,8 @@ public class MySphere extends Sphere implements Displayable {
 
 	private Position position;
 	private Color color;
+	private float radius=10F;
+	FloatBuffer transformationBuffer;
 
 	public MySphere(Position position, Color color) {
 		this.position = position;
@@ -19,12 +24,31 @@ public class MySphere extends Sphere implements Displayable {
 		GL11.glPushMatrix();
 		{
 //			textureFlag = true;
-			position.bindPosition();
+			if(transformationBuffer == null) {
+				position.bindPosition();
+			} else {
+				GL11.glMultMatrix(transformationBuffer);
+			}
 			color.bind();
-			draw(10F, 25, 25);
+			draw(radius, 25, 25);
 		}
 		GL11.glPopMatrix();
 	}
+	
+	public float getRadius() {
+		return radius;
+	}
+	
+	public Position getPosition() {
+		return position;
+	}
+	public void putTransformMatrix(float[] matrix) {
+		transformationBuffer.clear();
+		transformationBuffer.put(matrix);
+		transformationBuffer.flip();
+	}
 
-
+	public void activatePhysics() {
+		transformationBuffer = BufferUtils.createFloatBuffer(32);
+	}
 }
