@@ -3,32 +3,25 @@ package swarm3d;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Sphere;
 
-public class MySphere extends Sphere {
+public class MySphere extends Sphere implements Displayable {
 
-	public MySphere(float x, float y, float z, float[] color) {
-		super();
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	private Position position;
+	private Color color;
+
+	public MySphere(Position position, Color color) {
+		this.position = position;
 		this.color = color;
 	}
 
-
-
-	private float x,y,z;
-	private float[] color;
-
-
-
+	@Override
 	public void display() {
 
 		GL11.glPushMatrix();
 		{
-
-			GL11.glTranslatef(x, y, z);
-			GL11.glColor3f(color[0], color[1], color[2]);
-			draw(10F, 15, 15);
-
+//			textureFlag = true;
+			position.bindPosition();
+			color.bind();
+			draw(10F, 25, 25);
 		}
 		GL11.glPopMatrix();
 	}

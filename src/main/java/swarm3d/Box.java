@@ -2,26 +2,21 @@ package swarm3d;
 
 import org.lwjgl.opengl.GL11;
 
-public class Box {
+public class Box implements Displayable {
 
-	private float x, y, z, width, height, depth;
+	private Position position;
+	private Dimension3d dimension;
 	private float rx, ry, rz, rw;
-	private float[] backColor = {1f,0f,0f};  // Red
-	private float[] frontColor = {1f,1f,0f}; 
-	private float[] topColor = {1f,0f,1f};
-	private float[] bottomColor = {0f,1f,0f}; // Green
-	private float[] leftColor = {0f,1f,1f};  
-	private float[] rightColor = {0f,0f,1f}; // blue
+	private Color backColor = new Color(1f,0f,0f);  // Red
+	private Color frontColor = new Color(1f,1f,0f); 
+	private Color topColor = new Color(1f,0f,1f);
+	private Color bottomColor = new Color(0f,1f,0f); // Green
+	private Color leftColor = new Color(0f,1f,1f);  
+	private Color rightColor = new Color(0f,0f,1f); // blue
 
-	public Box(float x, float y, float z, float width, float height,
-			float depth) {
-		super();
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.width = width;
-		this.height = height;
-		this.depth = depth;
+	public Box(Position position, Dimension3d dimension) {
+		this.position = position;
+		this.dimension = dimension;
 	}
 	
 	public void display() {
@@ -29,63 +24,60 @@ public class Box {
 		GL11.glPushMatrix(); 
 		{
 			
-			GL11.glTranslatef(x, y, z);
-//			GL11.glRotatef(rx, 1, 0, 0);
-//			GL11.glRotatef(ry, 0, 1, 0);
-//			GL11.glRotatef(rz, 0, 0, 1);
+			position.bindPosition();
 			GL11.glRotatef(rw, rx, ry, rz);
 			GL11.glBegin(GL11.GL_QUADS); 
 			{
 
-				float back = depth/2;
+				float back = dimension.depth/2;
 				float front = -back;
 
-				float top = height/2;
+				float top = dimension.height/2;
 				float bottom = -top;
 				
-				float right = width/2;
+				float right = dimension.width/2;
 				float left = -right;
 				
-				GL11.glColor3f(frontColor[0], frontColor[1], frontColor[2]);
+				frontColor.bind();
 				// Front
 				GL11.glVertex3f(left, bottom, front);
 				GL11.glVertex3f(left, top, front);
 				GL11.glVertex3f(right, top, front);
 				GL11.glVertex3f(right, bottom, front);
 				
-				GL11.glColor3f(backColor[0], backColor[1], backColor[2]);
+				backColor.bind();
 				// Back
 				GL11.glVertex3f(left, bottom, back);
 				GL11.glVertex3f(left, top, back);
 				GL11.glVertex3f(right, top, back);
 				GL11.glVertex3f(right, bottom, back);		
-				
-				GL11.glColor3f(topColor[0], topColor[1], topColor[2]);
+//				
+				topColor.bind();
 				// Top
 				GL11.glVertex3f(left,  top, front);
 				GL11.glVertex3f(left,  top,  back);
 				GL11.glVertex3f(right,  top, back);
 				GL11.glVertex3f(right,  top, front);		
 
-				GL11.glColor3f(bottomColor[0], bottomColor[1], bottomColor[2]);
+				bottomColor.bind();
 				// Bottom
 				GL11.glVertex3f(left, bottom, back);
 				GL11.glVertex3f(right, bottom, back); 
 				GL11.glVertex3f(right, bottom, front);	
 				GL11.glVertex3f(left, bottom, front);	
 
-				GL11.glColor3f(leftColor[0], leftColor[1], leftColor[2]);
+				leftColor.bind();
 				// Left
 				GL11.glVertex3f(left, bottom, front);
 				GL11.glVertex3f(left, bottom,  back);
 				GL11.glVertex3f(left, top,  back);
 				GL11.glVertex3f(left, top, front);	
 				
-				GL11.glColor3f(rightColor[0], rightColor[1], rightColor[2]);
+				rightColor.bind();
 				// Right
-				GL11.glVertex3f(right,  bottom, front);    
-				GL11.glVertex3f(right,  bottom,  back);    
-				GL11.glVertex3f(right,  top,  back);       
+				GL11.glVertex3f(right,  bottom, front);   
+				GL11.glVertex3f(right,  bottom,  back);  
+				GL11.glVertex3f(right,  top,  back);   
 				GL11.glVertex3f(right,  top, front);	     
 				
 			}
@@ -100,101 +92,53 @@ public class Box {
 		this.ry += ry;
 		this.rz += rz;
 	}
-
-	public float[] getBackColor() {
-		return backColor;
-	}
-
-	public void setBackColor(float[] backColor) {
-		this.backColor = backColor;
-	}
-
-	public float[] getFrontColor() {
-		return frontColor;
-	}
-
-	public void setFrontColor(float[] frontColor) {
-		this.frontColor = frontColor;
-	}
-
-	public float[] getTopColor() {
-		return topColor;
-	}
-
-	public void setTopColor(float[] topColor) {
-		this.topColor = topColor;
-	}
-
-	public float[] getBottomColor() {
-		return bottomColor;
-	}
-
-	public void setBottomColor(float[] bottomColor) {
-		this.bottomColor = bottomColor;
-	}
-
-	public float[] getLeftColor() {
-		return leftColor;
-	}
-
-	public void setLeftColor(float[] leftColor) {
-		this.leftColor = leftColor;
-	}
-
-	public float[] getRightColor() {
-		return rightColor;
-	}
-
-	public void setRightColor(float[] rightColor) {
-		this.rightColor = rightColor;
-	}
 	
 	public void setY(float y) {
-		this.y = y;
+		this.position.y = y;
 	}
 
 	public float getX() {
-		return x;
+		return position.x;
 	}
 
 	public void setX(float x) {
-		this.x = x;
+		this.position.x = x;
 	}
 
 	public float getZ() {
-		return z;
+		return position.z;
 	}
 
 	public void setZ(float z) {
-		this.z = z;
+		this.position.z = z;
 	}
 
 	public float getY() {
-		return y;
+		return position.y;
 	}
 
 	public float getWidth() {
-		return width;
+		return dimension.width;
 	}
 
 	public void setWidth(float width) {
-		this.width = width;
+		this.dimension.width = width;
 	}
 
 	public float getHeight() {
-		return height;
+		return dimension.height;
 	}
 
 	public void setHeight(float height) {
-		this.height = height;
+		this.dimension.height = height;
 	}
 
 	public float getDepth() {
-		return depth;
+		return dimension.depth;
 	}
 
 	public void setDepth(float depth) {
-		this.depth = depth;
+		this.dimension.depth = depth;
 	}
 
 	public float getRx() {
