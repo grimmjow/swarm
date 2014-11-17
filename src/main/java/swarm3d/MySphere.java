@@ -16,6 +16,7 @@ public class MySphere extends Sphere implements Displayable {
 	public MySphere(Position position, Color color) {
 		this.position = position;
 		this.color = color;
+		System.out.println(position.toString());
 	}
 
 	@Override
@@ -30,15 +31,15 @@ public class MySphere extends Sphere implements Displayable {
 				GL11.glMultMatrix(transformationBuffer);
 			}
 			color.bind();
-			draw(radius, 25, 25);
+			draw(radius, 15, 15);
 		}
 		GL11.glPopMatrix();
 	}
-	
+
 	public float getRadius() {
 		return radius;
 	}
-	
+
 	public Position getPosition() {
 		return position;
 	}

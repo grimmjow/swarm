@@ -8,16 +8,15 @@ import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
-import org.lwjgl.Sys;
+import swarm3d.Orbs.Orb;
 
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
-import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
+import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.collision.shapes.SphereShape;
-import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.StaticPlaneShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
@@ -32,7 +31,7 @@ public class PhysicThread extends Thread {
 	RigidBody fallRigidBody;
 	Map<RigidBody, Displayable> things = new HashMap<>();
 	boolean stopIssued = false;
-	
+
 	public PhysicThread(List<Displayable> displayables) {
 
 		// Build the broadphase
@@ -58,7 +57,7 @@ public class PhysicThread extends Thread {
 	    dynamicsWorld.addRigidBody(groundRigidBody);
 
 	    for(Displayable displayable : displayables) {
-	    
+
 	    	if(displayable instanceof Box) {
 	    		Box box = (Box) displayable;
 			    RigidBody body = createRigidBodyFromBox(box);
@@ -72,16 +71,37 @@ public class PhysicThread extends Thread {
 		        dynamicsWorld.addRigidBody(body);
 		        things.put(body, mySphere);
 		        mySphere.activatePhysics();
-	    	}	        
+	    	}
+
+	    	if(displayable instanceof Orb) {
+	    		Orb orb = (Orb) displayable;
+			    RigidBody body = createRigidBodyFromOrb(orb);
+		        dynamicsWorld.addRigidBody(body);
+		        things.put(body, orb);
+	    	}
 	    }
-		
+
+	}
+
+	private RigidBody createRigidBodyFromOrb(Orb orb) {
+
+	    DefaultMotionState fallMotionState = new DefaultMotionState(orb.getTransform());
+	    Vector3f fallInertia = new Vector3f(0, 0, 0);
+        orb.getShape().calculateLocalInertia(1F, fallInertia);
+
+        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(0.1f, fallMotionState, orb.getShape(), fallInertia);
+        fallRigidBodyCI.restitution = 0.5f;
+        fallRigidBodyCI.angularDamping = 0.95f;
+        fallRigidBody = new RigidBody(fallRigidBodyCI);
+//        fallRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
+        return fallRigidBody;
 	}
 
 	private RigidBody createRigidBodyFromBox(Box box) {
-		
+
 	    CollisionShape fallShape = new BoxShape(new Vector3f(box.getWidth()/2, box.getHeight()/2, box.getDepth()/2));
 	    DefaultMotionState fallMotionState = new DefaultMotionState(new Transform(
-	    		new Matrix4f(new Quat4f(box.getRw(), box.getRx(), box.getRy(), box.getRz()), 
+	    		new Matrix4f(new Quat4f(box.getRw(), box.getRx(), box.getRy(), box.getRz()),
 	    				new Vector3f(box.getX(), box.getY(), box.getZ()), 1)));
 	    Vector3f fallInertia = new Vector3f(0, 0, 0);
         fallShape.calculateLocalInertia(1F, fallInertia);
@@ -96,10 +116,10 @@ public class PhysicThread extends Thread {
 
 
 	private RigidBody createRigidBodyFromBox(MySphere sphere) {
-		
+
 	    CollisionShape fallShape = new SphereShape(sphere.getRadius());
 	    DefaultMotionState fallMotionState = new DefaultMotionState(new Transform(
-	    		new Matrix4f(new Quat4f(0.0f, 0.0f, 0.0f, 1f), 
+	    		new Matrix4f(new Quat4f(0.0f, 0.0f, 0.0f, 1f),
 	    				new Vector3f(sphere.getPosition().x, sphere.getPosition().y, sphere.getPosition().z), 1)));
 	    Vector3f fallInertia = new Vector3f(0, 0, 0);
         fallShape.calculateLocalInertia(1F, fallInertia);
@@ -110,11 +130,11 @@ public class PhysicThread extends Thread {
         fallRigidBody = new RigidBody(fallRigidBodyCI);
 //        fallRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
         return fallRigidBody;
-	}	
+	}
 
 	@Override
 	public void run() {
-		
+
 		long syncTime = (long) ((1F/60F)*1000L);
         while (!stopIssued) {
 
@@ -130,7 +150,11 @@ public class PhysicThread extends Thread {
 	            }
 	            if(displayable instanceof MySphere) {
 	            	((MySphere) displayable).putTransformMatrix(matrix);
-	            }	            
+	            }
+	            if(displayable instanceof Orb) {
+	            	Orb orb = (Orb) displayable;
+	            	orb.putTransformMatrix(matrix);
+	            }
             }
             long currentTimeMillis2 = System.currentTimeMillis();
             try {
@@ -139,16 +163,16 @@ public class PhysicThread extends Thread {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-            
+
         }
 	}
-	
+
 	public RigidBody getFallRigidBody() {
 		return fallRigidBody;
 	}
-	
+
 	public void issueStop() {
 		stopIssued = true;
 	}
-	
+
 }

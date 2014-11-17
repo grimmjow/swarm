@@ -18,6 +18,9 @@ import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
+import swarm3d.Orbs.Magnet;
+import swarm3d.Orbs.Orb;
+
 public class MainDisplay {
 
 	Camera camera;
@@ -27,95 +30,25 @@ public class MainDisplay {
 	Texture texture;
 	Random random = new Random();
 	FloatBuffer position, ambient;
-	
+
 	public MainDisplay() throws LWJGLException, FileNotFoundException, IOException {
-
-		for(int i=0;i<=1000;i++) {
-			addBox();
-		}
-		
-		float r=10f;
-		float yOffset=50;
-		// level 1
-		// row 1
-		displayables.add(new MySphere(new Position(2*r, yOffset, 0), new Color(0.8f, 0.8f, 0f)));
-		displayables.add(new MySphere(new Position(4*r, yOffset, 0), new Color(0.7f, 0.7f, 0f)));
-		displayables.add(new MySphere(new Position(6*r, yOffset, 0), new Color(0.7f, 0.7f, 0f)));
-
-		// row 2
-		displayables.add(new MySphere(new Position(r,   yOffset+(float)Math.sqrt(3)*r, 0),   new Color(0.7f, 0.7f, 0.0f)));
-		displayables.add(new MySphere(new Position(3*r, yOffset+(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0.0f)));
-		displayables.add(new MySphere(new Position(5*r, yOffset+(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0.0f)));
-
-		// row 3
-		displayables.add(new MySphere(new Position(r,   yOffset+-(float)Math.sqrt(3)*r, 0),   new Color(0.7f, 0.7f, 0f)));
-		displayables.add(new MySphere(new Position(3*r, yOffset+-(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0f)));
-		displayables.add(new MySphere(new Position(5*r, yOffset+-(float)Math.sqrt(3)*r, 0), new Color(0.7f, 0.7f, 0f)));
-
-		// level 2
-		// row 1
-		displayables.add(new MySphere(new Position(r,   yOffset+(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
-		displayables.add(new MySphere(new Position(3*r, yOffset+(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
-		displayables.add(new MySphere(new Position(5*r, yOffset+(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.0f, 0f, 0.9f)));
-
-		// row 2
-		displayables.add(new MySphere(new Position(2*r, yOffset+4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(4*r, yOffset+4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(6*r, yOffset+4*(float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-
-		// row 3
-		displayables.add(new MySphere(new Position(2*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
-		displayables.add(new MySphere(new Position(4*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
-		displayables.add(new MySphere(new Position(6*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), new Color(0.9f, 0f, 0.0f)));
-
-		// level 0
-		// row 1
-		displayables.add(new MySphere(new Position(r,   yOffset+(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(3*r, yOffset+(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(5*r, yOffset+(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.5f, 0f, 0.5f)));
-
-		// row 2
-		displayables.add(new MySphere(new Position(2*r, yOffset+4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(4*r, yOffset+4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(6*r, yOffset+4*(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-
-		// row 3
-		displayables.add(new MySphere(new Position(2*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(4*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
-		displayables.add(new MySphere(new Position(6*r, yOffset+-(2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), new Color(0.3f, 0f, 0.5f)));
 
 		// x, y, z lines
 		displayables.add(new Raster(1000, 20));
 
-		displayables.add(new TimeDisplay(
-				new Position(0,150,-300), 
-				new Dimension2d(500, 150f), 
-				Color.GREEN,
-				new Rotation(45f, 1f, 0f, 0f)));
-
-		displayables.add(new TimeDisplay(
-				new Position(0,150,300), 
-				new Dimension2d(500, 150f), 
-				Color.GREEN,
-				new Rotation(180f, 0f, 1f, -0.30f)));
-
-		physics.add(new Box(new Position(-20f, 20, 0), new Dimension3d(5, 5, 5)));
-		physics.add(new Box(new Position(-15, 70, 0), new Dimension3d(15, 25, 5)));
-//		displayables.add(new Box(new Position(0, 0, 0), new Dimension3d(15, 25, 5)));
 		displayables.addAll(physics);
 		initDisplay();
-		
+
 		texture = TextureLoader.getTexture("png", new FileInputStream(new File("test.png")), GL11.GL_NEAREST);
 		float aspectRatio = (float)Display.getWidth()/ (float)Display.getHeight();
 		camera = new Camera(70, aspectRatio, 0.3f, 1000f);
-//		camera.moveZ(-50);
 		camera.moveY(-10);
 
-//		camera.moveY(-100);
-//		camera.rotateX(90f);
+		displayables.add(new Orb(20, new Position(0, 60, 0)));
+
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		
+
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -135,8 +68,8 @@ public class MainDisplay {
 
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			GL11.glLoadIdentity();
-			
-			float speed=2.5f;
+
+			float speed=1.5f;
 			float mouseSpeed=0.2f;
 
 			if(Keyboard.isKeyDown(Keyboard.KEY_W)) {
@@ -165,29 +98,42 @@ public class MainDisplay {
 				camera.rotateY(-speed);
 			}
 
+			if(Keyboard.isKeyDown(Keyboard.KEY_P)) {
+				for(Displayable displayable : displayables) {
+					if(displayable instanceof Orb) {
+						Orb orb = (Orb) displayable;
+						for(Magnet m : orb.getMagnets()) {
+							if(m.getColor() == Color.RED) {
+								m.setRw(m.getRw()+1);
+							}
+						}
+					}
+				}
+			}
+
 			if(Keyboard.isKeyDown(Keyboard.KEY_N)) {
 //				addBox();
 			}
-			
+
 			if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 				break;
 			}
 
-			
+
 			camera.rotateY(Mouse.getDX()*mouseSpeed);
 			camera.rotateX(Mouse.getDY()*-mouseSpeed);
 			camera.updateView();
 
-//			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getTextureID());
 
 		 	for(Displayable displayable : displayables) {
 		 		displayable.display();
-			}		 	
+			}
 
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D,0);
 
-			
+
 			Display.update();
 //			physicThread.suspend();
 			Display.sync(60);
@@ -199,15 +145,15 @@ public class MainDisplay {
 	}
 
 	private void addBox() {
-		
+
 		float bigBox = 500;
 		float boxBox = 10f;
-		Box box = new Box(new Position(bigBox*random.nextFloat()*(random.nextBoolean()?1.0f:-1.0f), 
-				bigBox*random.nextFloat() + 10, 
+		Box box = new Box(new Position(bigBox*random.nextFloat()*(random.nextBoolean()?1.0f:-1.0f),
+				bigBox*random.nextFloat() + 10,
 				bigBox*random.nextFloat()*(random.nextBoolean()?1.0f:-1.0f)),
 				new Dimension3d(
-				random.nextFloat()*boxBox, 
-				random.nextFloat()*boxBox, 
+				random.nextFloat()*boxBox,
+				random.nextFloat()*boxBox,
 				random.nextFloat()*boxBox));
 		box.setBackColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
 		box.setFrontColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
@@ -216,14 +162,14 @@ public class MainDisplay {
 		box.setTopColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
 		box.setBottomColor(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat()));
 		physics.add(box);
-	}	
-	
+	}
+
 	private void initDisplay() throws LWJGLException {
 		DisplayMode[] availableDisplayModes = Display.getAvailableDisplayModes();
 
 		for(DisplayMode displayMode : availableDisplayModes) {
 			System.out.println(displayMode);
-			if(displayMode.isFullscreenCapable() && displayMode.getWidth() == 1024) {
+			if(displayMode.isFullscreenCapable() && displayMode.getWidth() == 800) {
 				Display.setDisplayMode(displayMode);
 				break;
 			}

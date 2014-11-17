@@ -1,5 +1,7 @@
 package swarm3d;
 
+import javax.vecmath.Vector3f;
+
 import org.lwjgl.opengl.GL11;
 
 public class Position {
@@ -12,12 +14,21 @@ public class Position {
 		this.y = y;
 		this.z = z;
 	}
-	
+
 	public void bindVertex() {
-		GL11.glVertex3f(x, y, z);		
+		GL11.glVertex3f(x, y, z);
 	}
 
 	public void bindPosition() {
-		GL11.glTranslatef(x, y, z);		
+		GL11.glTranslatef(x, y, z);
+	}
+
+	@Override
+	public String toString() {
+		return "Position [x=" + x + ", y=" + y + ", z=" + z + "]" + Math.sqrt(Math.pow(Math.sqrt(x*x+y*y), 2) + z*z);
+	}
+
+	public Vector3f toVector() {
+		return new Vector3f(x,y,z);
 	}
 }
