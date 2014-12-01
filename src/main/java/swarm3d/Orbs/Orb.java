@@ -17,7 +17,6 @@ import swarm3d.Displayable;
 import swarm3d.Position;
 
 import com.bulletphysics.collision.shapes.CompoundShape;
-import com.bulletphysics.collision.shapes.CylinderShape;
 import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.linearmath.Transform;
 
@@ -25,40 +24,37 @@ public class Orb implements Displayable {
 
 	List<Magnet> magnets = new ArrayList<>();
 	CompoundShape shape;
-	private float	radius;
+	private float radius;
+
 	FloatBuffer transformationBuffer = BufferUtils.createFloatBuffer(32);
-	private Position	position;
 	private Transform transform;
 
 
 	public Orb(float radius, Position position) {
+		this.radius = radius;
 
 		shape = new CompoundShape();
+		this.transform = new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), position.toVector(), 1));
 
 		SphereShape sphereShape = new SphereShape(radius);
-		transform = new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), position.toVector(), 1));
+		Transform transform = new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), new Vector3f(0, 0, 0), 1));
 		shape.addChildShape(transform, sphereShape);
 
-		addMagnets(radius);
-		this.radius = radius;
-		this.position = position;
+		addMagnets(position.toVector(), radius);
+
+		Vector3f center = new Vector3f();
+		float[] myRadius = new float[5];
+		shape.getBoundingSphere(center, myRadius);
+		System.out.println("center: " + center + " radius: " + myRadius);
+		System.out.println(transform.origin);
 	}
 
 	private void addMagnet(Vector3f position, Color color) {
 
-		float radius = 1f;
-		float height = 0.1f;
+		float radius = this.radius / 20;
 
-		Magnet m = new Magnet(position, new CylinderShape(new Vector3f(radius, 0, height)), color);
+		Magnet m = new Magnet(position, new SphereShape(radius), color);
 		magnets.add(m);
-
-		if(Color.RED == color)  {
-			m.setRw(0);
-			m.setRx(3.2f);
-			m.setRy(5.5f);
-			m.setRz(0.7f);
-
-		}
 
 		Transform t = new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), position, 1));
 
@@ -69,9 +65,9 @@ public class Orb implements Displayable {
 		addMagnet(position, Color.GREEN);
 	}
 
-	private void addMagnets(float r) {
+	private void addMagnets(Vector3f rootPosition, float r) {
 
-		r /= 2.1f;
+		r /= 2.2f;
 
 		addMagnet(new Vector3f(-r*2, 0, 0));
 		addMagnet(new Vector3f(r*2, 0, 0));
@@ -89,7 +85,7 @@ public class Orb implements Displayable {
 		addMagnet(new Vector3f(0, (2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3));
 
 		addMagnet(new Vector3f(-r, -(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3));
-		addMagnet(new Vector3f(r, -(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), Color.RED);
+		addMagnet(new Vector3f(r, -(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3));
 
 	}
 
@@ -117,6 +113,18 @@ public class Orb implements Displayable {
 		return transform;
 	}
 
+	@Override
+	public String toString() {
+		String out = "Orb " + getPosition()
+			+ "\nMagnets\n";
+
+		for(Magnet magnet : magnets) {
+			out += new Position(magnet.getAbsolutePosition(transform)) + "\n";
+		}
+
+		return out;
+	}
+
 	public void putTransformMatrix(float[] matrix) {
 		transformationBuffer.clear();
 		transformationBuffer.put(matrix);
@@ -126,6 +134,18 @@ public class Orb implements Displayable {
 
 	public List<Magnet> getMagnets() {
 		return magnets;
+	}
+
+	public Position getPosition() {
+		return new Position(transform.origin);
+	}
+
+	public void setTransform(Transform transform2) {
+		this.transform = transform2;
+	}
+
+	public float getRadius() {
+		return radius;
 	}
 
 }

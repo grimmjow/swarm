@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.vecmath.Vector3f;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -30,6 +32,7 @@ public class MainDisplay {
 	Texture texture;
 	Random random = new Random();
 	FloatBuffer position, ambient;
+	Orb orb;
 
 	public MainDisplay() throws LWJGLException, FileNotFoundException, IOException {
 
@@ -43,8 +46,12 @@ public class MainDisplay {
 		float aspectRatio = (float)Display.getWidth()/ (float)Display.getHeight();
 		camera = new Camera(70, aspectRatio, 0.3f, 1000f);
 		camera.moveY(-10);
+		camera.moveZ(-200);
 
-		displayables.add(new Orb(20, new Position(0, 60, 0)));
+		orb = new Orb(20, new Position(0, 60, 0));
+		displayables.add(orb);
+		orb = new Orb(20, new Position(5, 150, 0));
+		displayables.add(orb);
 
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -98,25 +105,23 @@ public class MainDisplay {
 				camera.rotateY(-speed);
 			}
 
-			if(Keyboard.isKeyDown(Keyboard.KEY_P)) {
-				for(Displayable displayable : displayables) {
-					if(displayable instanceof Orb) {
-						Orb orb = (Orb) displayable;
-						for(Magnet m : orb.getMagnets()) {
-							if(m.getColor() == Color.RED) {
-								m.setRw(m.getRw()+1);
-							}
-						}
-					}
-				}
-			}
-
 			if(Keyboard.isKeyDown(Keyboard.KEY_N)) {
 //				addBox();
 			}
 
 			if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 				break;
+			}
+
+			if(Keyboard.isKeyDown(Keyboard.KEY_P)) {
+
+				for(Magnet magent : orb.getMagnets()) {
+					Vector3f absolutePosition = magent.getAbsolutePosition(orb.getTransform());
+					displayables.add(new Box(new Position(absolutePosition.x, absolutePosition.y, absolutePosition.z),
+							new Dimension3d(2, 2, 2)));
+				}
+
+				System.out.println("Orb: " + orb);
 			}
 
 

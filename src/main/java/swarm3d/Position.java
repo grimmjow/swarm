@@ -15,6 +15,10 @@ public class Position {
 		this.z = z;
 	}
 
+	public Position(Vector3f origin) {
+		this(origin.x, origin.y, origin.z);
+	}
+
 	public void bindVertex() {
 		GL11.glVertex3f(x, y, z);
 	}
@@ -25,7 +29,7 @@ public class Position {
 
 	@Override
 	public String toString() {
-		return "Position [x=" + x + ", y=" + y + ", z=" + z + "]" + Math.sqrt(Math.pow(Math.sqrt(x*x+y*y), 2) + z*z);
+		return "Position [x=" + x + ", y=" + y + ", z=" + z + "] Distance to 0: " + Math.sqrt(Math.pow(Math.sqrt(x*x+y*y), 2) + z*z);
 	}
 
 	public Vector3f toVector() {

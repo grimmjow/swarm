@@ -1,5 +1,6 @@
 package swarm3d;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,11 +9,13 @@ import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
+import swarm3d.Orbs.Magnet;
 import swarm3d.Orbs.Orb;
 
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
+import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
@@ -29,7 +32,8 @@ public class PhysicThread extends Thread {
 
 	DiscreteDynamicsWorld dynamicsWorld;
 	RigidBody fallRigidBody;
-	Map<RigidBody, Displayable> things = new HashMap<>();
+	Map<Displayable, RigidBody> things = new HashMap<>();
+	List<Orb> orbse = new ArrayList<>();
 	boolean stopIssued = false;
 
 	public PhysicThread(List<Displayable> displayables) {
@@ -62,14 +66,14 @@ public class PhysicThread extends Thread {
 	    		Box box = (Box) displayable;
 			    RigidBody body = createRigidBodyFromBox(box);
 		        dynamicsWorld.addRigidBody(body);
-		        things.put(body, box);
+		        things.put(box, body);
 		        box.activatePhysics();
 	    	}
 	    	if(displayable instanceof MySphere) {
 	    		MySphere mySphere = (MySphere) displayable;
 			    RigidBody body = createRigidBodyFromBox(mySphere);
 		        dynamicsWorld.addRigidBody(body);
-		        things.put(body, mySphere);
+		        things.put(mySphere, body);
 		        mySphere.activatePhysics();
 	    	}
 
@@ -77,7 +81,8 @@ public class PhysicThread extends Thread {
 	    		Orb orb = (Orb) displayable;
 			    RigidBody body = createRigidBodyFromOrb(orb);
 		        dynamicsWorld.addRigidBody(body);
-		        things.put(body, orb);
+		        things.put(orb, body);
+		        orbse.add(orb);
 	    	}
 	    }
 
@@ -89,11 +94,11 @@ public class PhysicThread extends Thread {
 	    Vector3f fallInertia = new Vector3f(0, 0, 0);
         orb.getShape().calculateLocalInertia(1F, fallInertia);
 
-        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(0.1f, fallMotionState, orb.getShape(), fallInertia);
+        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(1f, fallMotionState, orb.getShape(), fallInertia);
         fallRigidBodyCI.restitution = 0.5f;
         fallRigidBodyCI.angularDamping = 0.95f;
         fallRigidBody = new RigidBody(fallRigidBodyCI);
-//        fallRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
+        fallRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
         return fallRigidBody;
 	}
 
@@ -110,6 +115,7 @@ public class PhysicThread extends Thread {
         fallRigidBodyCI.restitution = 0.9f;
         fallRigidBodyCI.friction = 0.95f;
         fallRigidBody = new RigidBody(fallRigidBodyCI);
+
 //        fallRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
         return fallRigidBody;
 	}
@@ -125,7 +131,7 @@ public class PhysicThread extends Thread {
         fallShape.calculateLocalInertia(1F, fallInertia);
 
         RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(0.1f, fallMotionState, fallShape, fallInertia);
-        fallRigidBodyCI.restitution = 0.5f;
+        fallRigidBodyCI.restitution = 0.1f;
         fallRigidBodyCI.angularDamping = 0.95f;
         fallRigidBody = new RigidBody(fallRigidBodyCI);
 //        fallRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
@@ -141,10 +147,11 @@ public class PhysicThread extends Thread {
 			long currentTimeMillis = System.currentTimeMillis();
             dynamicsWorld.stepSimulation(1 / 60.f, 100);
 
-            for(Map.Entry<RigidBody, Displayable> entry: things.entrySet()) {
-            	Displayable displayable = entry.getValue();
+            for(Map.Entry<Displayable, RigidBody> entry: things.entrySet()) {
+            	Displayable displayable = entry.getKey();
 	            float[] matrix = new float[16];
-	            entry.getKey().getMotionState().getWorldTransform(new Transform()).getOpenGLMatrix(matrix);
+	            Transform transform = entry.getValue().getMotionState().getWorldTransform(new Transform());
+	            transform.getOpenGLMatrix(matrix);
 	            if(displayable instanceof Box) {
 	            	((Box) displayable).putTransformMatrix(matrix);
 	            }
@@ -154,8 +161,41 @@ public class PhysicThread extends Thread {
 	            if(displayable instanceof Orb) {
 	            	Orb orb = (Orb) displayable;
 	            	orb.putTransformMatrix(matrix);
+	            	orb.setTransform(transform);
 	            }
             }
+
+            for(int iter1 = 0; iter1 < orbse.size(); iter1++) {
+            	for (int iter2 = iter1+1; iter2 < orbse.size(); iter2++) {
+            		Orb orb1 = orbse.get(iter1);
+            		Orb orb2 = orbse.get(iter2);
+
+            		Magnet mag1 = getCloseMagnet(orb1, orb2);
+            		Magnet mag2 = getCloseMagnet(orb2, orb1);
+
+            		Vector3f force1 = new Vector3f(mag1.getAbsolutePosition(orb1.getTransform()));
+            		force1.sub(mag2.getAbsolutePosition(orb2.getTransform()));
+
+            		if (getDistance(new Vector3f(), force1) >= Magnet.MAX_FORCE) {
+            			continue;
+            		}
+
+            		Vector3f force2 = new Vector3f(mag2.getAbsolutePosition(orb2.getTransform()));
+            		force2.sub(mag1.getAbsolutePosition(orb1.getTransform()));
+
+            		// shit begins
+            		float f = Magnet.MAX_FORCE / (Magnet.MAX_FORCE - getDistance(new Vector3f(), force1));
+            		force1.scale(f);
+            		force2.scale(f);
+            		// shit ends
+
+            		things.get(orb1).applyForce(force1, mag1.getPosition());
+            		things.get(orb2).applyForce(force2, mag2.getPosition());
+
+            		System.out.println("Force: " + f + " " + getDistance(force1, new Vector3f()));
+            	}
+            }
+
             long currentTimeMillis2 = System.currentTimeMillis();
             try {
             	long sleepTime = (syncTime - (currentTimeMillis2 - currentTimeMillis));
@@ -165,6 +205,28 @@ public class PhysicThread extends Thread {
 			}
 
         }
+	}
+
+	private Magnet getCloseMagnet(Orb orb1, Orb orb2) {
+		Magnet best = null;
+		float bestDistance = getDistance(orb1.getTransform().origin, orb2.getTransform().origin);
+
+		for (Magnet mag : orb1.getMagnets()) {
+			float dist = getDistance(mag.getAbsolutePosition(orb1.getTransform()), orb2.getTransform().origin);
+			if (dist < bestDistance) {
+				bestDistance = dist;
+				best = mag;
+			}
+		}
+
+		return best;
+	}
+
+	private float getDistance(Vector3f origin, Vector3f origin2) {
+		float x = origin.x - origin2.x;
+		float y = origin.y - origin2.y;
+		float z = origin.z - origin2.z;
+		return (float) Math.sqrt(Math.pow(Math.sqrt(x*x+y*y), 2) + z*z);
 	}
 
 	public RigidBody getFallRigidBody() {
