@@ -49,7 +49,7 @@ public class PhysicThread extends Thread {
 
 	    // The world.
 	    dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-	    dynamicsWorld.setGravity(new Vector3f(0, -10, 0));
+	    dynamicsWorld.setGravity(new Vector3f(0, 0, 0));
 
 	    // adding the ground
 	    CollisionShape groundShape = new StaticPlaneShape(new Vector3f(0, 1, 0), 1f);
@@ -84,9 +84,9 @@ public class PhysicThread extends Thread {
 
 	    DefaultMotionState fallMotionState = new DefaultMotionState(orb.getTransform());
 	    Vector3f fallInertia = new Vector3f(0, 0, 0);
-        orb.getShape().calculateLocalInertia(10F, fallInertia);
+        orb.getShape().calculateLocalInertia(orb.getMass(), fallInertia);
 
-        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(10f, fallMotionState, orb.getShape(), fallInertia);
+        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(orb.getMass(), fallMotionState, orb.getShape(), fallInertia);
         fallRigidBodyCI.restitution = 0.5f;
         fallRigidBodyCI.angularDamping = 0.95f;
         fallRigidBody = new RigidBody(fallRigidBodyCI);
@@ -115,11 +115,11 @@ public class PhysicThread extends Thread {
 	@Override
 	public void run() {
 
-		long syncTime = (long) ((1F/120F)*1000L);
+		long syncTime = (long) ((1F/60F)*1000L);
         while (!stopIssued) {
 
 			long currentTimeMillis = System.currentTimeMillis();
-            dynamicsWorld.stepSimulation(1 / 120.f, 100);
+            dynamicsWorld.stepSimulation(1 / 60.f, 100);
 
             for(Map.Entry<Displayable, RigidBody> entry: things.entrySet()) {
             	Displayable displayable = entry.getKey();
@@ -144,22 +144,24 @@ public class PhysicThread extends Thread {
             		Magnet mag1 = getCloseMagnet(orb1, orb2);
             		Magnet mag2 = getCloseMagnet(orb2, orb1);
 
+            		float magnetForce = mag1.getForce() + mag2.getForce();
+            		float magnetRange = mag1.getRange() + mag2.getRange();
+
             		Vector3f force1 = new Vector3f(mag1.getAbsolutePosition(orb1.getTransform()));
             		force1.sub(mag2.getAbsolutePosition(orb2.getTransform()));
 
-            		if (getDistance(new Vector3f(), force1) >= Magnet.MAX_FORCE) {
+            		if (magnetRange <= getDistance(new Vector3f(), force1)) {
             			continue;
             		}
 
             		Vector3f force2 = new Vector3f(mag2.getAbsolutePosition(orb2.getTransform()));
             		force2.sub(mag1.getAbsolutePosition(orb1.getTransform()));
 
-            		float normaizer = Magnet.MAX_FORCE / (getDistance(new Vector3f(), force1));
-            		float f = normaizer * (Magnet.MAX_FORCE - getDistance(new Vector3f(), force1)) / Magnet.MAX_FORCE;
-            		force1.scale(f);
-            		force2.scale(f);
-            		things.get(orb1).applyForce(force2, mag1.getPosition());
-            		things.get(orb2).applyForce(force1, mag2.getPosition());
+            		force1.scale(calcForce(magnetForce, magnetRange, force1));
+            		things.get(orb1).applyForce(force1, mag1.getPosition());
+
+            		force2.scale(calcForce(magnetForce, magnetRange, force2));
+               		things.get(orb2).applyForce(force2, mag2.getPosition());
             	}
             }
 
@@ -175,9 +177,16 @@ public class PhysicThread extends Thread {
         }
 	}
 
+	private float calcForce(float magnetForce, float magnetRange, Vector3f force) {
+		float f = magnetRange / (getDistance(new Vector3f(), force)); // normalize
+		f = f * (magnetRange - getDistance(new Vector3f(), force)) / magnetRange; //invert
+		f = f * (magnetForce / magnetRange); // scale to force
+		return f * -1;
+	}
+
 	private Magnet getCloseMagnet(Orb orb1, Orb orb2) {
 		Magnet best = null;
-		float bestDistance = getDistance(orb1.getTransform().origin, orb2.getTransform().origin);
+		float bestDistance = Float.MAX_VALUE;
 
 		for (Magnet mag : orb1.getMagnets()) {
 			float dist = getDistance(mag.getAbsolutePosition(orb1.getTransform()), orb2.getTransform().origin);
@@ -185,6 +194,10 @@ public class PhysicThread extends Thread {
 				bestDistance = dist;
 				best = mag;
 			}
+		}
+
+		if(best == null) {
+			throw new RuntimeException("null panic");
 		}
 
 		return best;

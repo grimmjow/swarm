@@ -28,10 +28,12 @@ public class Orb implements Displayable {
 
 	FloatBuffer transformationBuffer = BufferUtils.createFloatBuffer(32);
 	private Transform transform;
+	private float mass;
 
 
-	public Orb(float radius, Position position) {
+	public Orb(float radius, float mass, Position position, float magnetRange, float magnetForce) {
 		this.radius = radius;
+		this.mass = mass;
 
 		shape = new CompoundShape();
 		this.transform = new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), position.toVector(), 1));
@@ -40,7 +42,7 @@ public class Orb implements Displayable {
 		Transform transform = new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), new Vector3f(0, 0, 0), 1));
 		shape.addChildShape(transform, sphereShape);
 
-		addMagnets(position.toVector(), radius);
+		addMagnets(position.toVector(), radius, magnetRange, magnetForce);
 
 		Vector3f center = new Vector3f();
 		float[] myRadius = new float[5];
@@ -49,11 +51,11 @@ public class Orb implements Displayable {
 		System.out.println(transform.origin);
 	}
 
-	private void addMagnet(Vector3f position, Color color) {
+	private void addMagnet(Vector3f position, Color color, float magnetRange, float magnetForce) {
 
 		float radius = this.radius / 20;
 
-		Magnet m = new Magnet(position, new SphereShape(radius), color);
+		Magnet m = new Magnet(position, new SphereShape(radius), color, magnetForce, magnetRange);
 		magnets.add(m);
 
 		Transform t = new Transform(new Matrix4f(new Quat4f(0, 0, 0, 1), position, 1));
@@ -61,31 +63,31 @@ public class Orb implements Displayable {
 		shape.addChildShape(t, m.shape);
 	}
 
-	private void addMagnet(Vector3f position) {
-		addMagnet(position, Color.GREEN);
+	private void addMagnet(Vector3f position, float magnetRange, float magnetForce) {
+		addMagnet(position, Color.GREEN, magnetRange, magnetForce);
 	}
 
-	private void addMagnets(Vector3f rootPosition, float r) {
+	private void addMagnets(Vector3f rootPosition, float r, float magnetRange, float magnetForce) {
 
 		r /= 2.2f;
 
-		addMagnet(new Vector3f(-r*2, 0, 0));
-		addMagnet(new Vector3f(r*2, 0, 0));
+		addMagnet(new Vector3f(-r*2, 0, 0), magnetRange, magnetForce);
+		addMagnet(new Vector3f(r*2, 0, 0), magnetRange, magnetForce);
 
-		addMagnet(new Vector3f(r, (float)Math.sqrt(3)*r, 0));
-		addMagnet(new Vector3f(-r, (float)Math.sqrt(3)*r, 0));
+		addMagnet(new Vector3f(r, (float)Math.sqrt(3)*r, 0), magnetRange, magnetForce);
+		addMagnet(new Vector3f(-r, (float)Math.sqrt(3)*r, 0), magnetRange, magnetForce);
 
-		addMagnet(new Vector3f(r, -(float)Math.sqrt(3)*r, 0));
-		addMagnet(new Vector3f(-r, -(float)Math.sqrt(3)*r, 0));
+		addMagnet(new Vector3f(r, -(float)Math.sqrt(3)*r, 0), magnetRange, magnetForce);
+		addMagnet(new Vector3f(-r, -(float)Math.sqrt(3)*r, 0), magnetRange, magnetForce);
 
-		addMagnet(new Vector3f(-r, (float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3));
-		addMagnet(new Vector3f(r, (float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3));
+		addMagnet(new Vector3f(-r, (float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), magnetRange, magnetForce);
+		addMagnet(new Vector3f(r, (float)Math.sqrt(3)*r / 3, (float)Math.sqrt(6)*r*2 / 3), magnetRange, magnetForce);
 
-		addMagnet(new Vector3f(0, -(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3));
-		addMagnet(new Vector3f(0, (2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3));
+		addMagnet(new Vector3f(0, -(2*(float)Math.sqrt(3)*r / 3), (float)Math.sqrt(6)*r*2 / 3), magnetRange, magnetForce);
+		addMagnet(new Vector3f(0, (2*(float)Math.sqrt(3)*r / 3), -(float)Math.sqrt(6)*r*2 / 3), magnetRange, magnetForce);
 
-		addMagnet(new Vector3f(-r, -(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3));
-		addMagnet(new Vector3f(r, -(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3));
+		addMagnet(new Vector3f(-r, -(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), magnetRange, magnetForce);
+		addMagnet(new Vector3f(r, -(float)Math.sqrt(3)*r / 3, -(float)Math.sqrt(6)*r*2 / 3), magnetRange, magnetForce);
 
 	}
 
@@ -146,6 +148,10 @@ public class Orb implements Displayable {
 
 	public float getRadius() {
 		return radius;
+	}
+
+	public float getMass() {
+		return mass;
 	}
 
 }

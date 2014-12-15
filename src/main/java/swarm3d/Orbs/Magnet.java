@@ -28,13 +28,16 @@ public class Magnet implements Displayable {
 	private Vector3f	position;
 	private Color color;
 
-	public final static float MAX_FORCE = 30;
+	private float force;
+	private float range;
 
 
-	public Magnet(Vector3f position, SphereShape sphereShape, Color color) {
+	public Magnet(Vector3f position, SphereShape sphereShape, Color color, float force, float range) {
 		shape = sphereShape;
 		this.position = position;
 		this.color = color;
+		this.force = force;
+		this.range = range;
 	}
 
 	@Override
@@ -66,4 +69,12 @@ public class Magnet implements Displayable {
 		return newPosition;
 	}
 
+	public float getForce() {
+		return force;
+	}
+
+	public float getRange() {
+		return range;
+	}
 }
+

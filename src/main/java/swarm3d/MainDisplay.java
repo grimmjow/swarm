@@ -48,10 +48,21 @@ public class MainDisplay {
 		camera.moveY(-5);
 		camera.moveZ(-40);
 
-		orb = new Orb(0.5f, new Position(0, 20, 0));
-		displayables.add(orb);
-		orb = new Orb(0.5f, new Position(1, 30, 0));
-		displayables.add(orb);
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 1, random.nextInt(1)), 0.75f, 5f));
+		displayables.add(new Orb(0.5f, 10f, new Position(1, 1, -2), 1.5f, 5f));
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 2, random.nextInt(1)), 0.75f, 5f));
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 3, random.nextInt(1)), 0.75f, 5f));
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 4, random.nextInt(1)), 0.75f, 5f));
+		displayables.add(new Orb(1f, 100f, new Position(random.nextInt(1), 6, random.nextInt(1)), 0.75f, 50f));
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 8, random.nextInt(1)), 0.75f, 5f));
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 9, random.nextInt(1)), 0.75f, 5f));
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 10, random.nextInt(1)), 0.75f, 5f));
+		displayables.add(new Orb(0.5f, 10f, new Position(random.nextInt(1), 11, random.nextInt(1)), 0.75f, 5f));
+
+//		orb = new Orb(0.5f, new Position(0, 20, 0));
+//		displayables.add(orb);
+//		orb = new Orb(0.5f, new Position(1, 30, 0));
+//		displayables.add(orb);
 
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
