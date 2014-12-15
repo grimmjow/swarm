@@ -45,12 +45,12 @@ public class MainDisplay {
 		texture = TextureLoader.getTexture("png", new FileInputStream(new File("test.png")), GL11.GL_NEAREST);
 		float aspectRatio = (float)Display.getWidth()/ (float)Display.getHeight();
 		camera = new Camera(70, aspectRatio, 0.3f, 1000f);
-		camera.moveY(-10);
-		camera.moveZ(-200);
+		camera.moveY(-5);
+		camera.moveZ(-40);
 
-		orb = new Orb(20, new Position(0, 60, 0));
+		orb = new Orb(0.5f, new Position(0, 20, 0));
 		displayables.add(orb);
-		orb = new Orb(20, new Position(5, 150, 0));
+		orb = new Orb(0.5f, new Position(1, 30, 0));
 		displayables.add(orb);
 
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -76,8 +76,8 @@ public class MainDisplay {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			GL11.glLoadIdentity();
 
-			float speed=1.5f;
-			float mouseSpeed=0.2f;
+			float speed=0.3f;
+			float mouseSpeed=0.1f;
 
 			if(Keyboard.isKeyDown(Keyboard.KEY_W)) {
 				camera.move(speed, 1);

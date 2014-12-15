@@ -19,7 +19,6 @@ import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.collision.shapes.SphereShape;
 import com.bulletphysics.collision.shapes.StaticPlaneShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
@@ -69,13 +68,6 @@ public class PhysicThread extends Thread {
 		        things.put(box, body);
 		        box.activatePhysics();
 	    	}
-	    	if(displayable instanceof MySphere) {
-	    		MySphere mySphere = (MySphere) displayable;
-			    RigidBody body = createRigidBodyFromBox(mySphere);
-		        dynamicsWorld.addRigidBody(body);
-		        things.put(mySphere, body);
-		        mySphere.activatePhysics();
-	    	}
 
 	    	if(displayable instanceof Orb) {
 	    		Orb orb = (Orb) displayable;
@@ -92,9 +84,9 @@ public class PhysicThread extends Thread {
 
 	    DefaultMotionState fallMotionState = new DefaultMotionState(orb.getTransform());
 	    Vector3f fallInertia = new Vector3f(0, 0, 0);
-        orb.getShape().calculateLocalInertia(1F, fallInertia);
+        orb.getShape().calculateLocalInertia(10F, fallInertia);
 
-        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(1f, fallMotionState, orb.getShape(), fallInertia);
+        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(10f, fallMotionState, orb.getShape(), fallInertia);
         fallRigidBodyCI.restitution = 0.5f;
         fallRigidBodyCI.angularDamping = 0.95f;
         fallRigidBody = new RigidBody(fallRigidBodyCI);
@@ -120,32 +112,14 @@ public class PhysicThread extends Thread {
         return fallRigidBody;
 	}
 
-
-	private RigidBody createRigidBodyFromBox(MySphere sphere) {
-
-	    CollisionShape fallShape = new SphereShape(sphere.getRadius());
-	    DefaultMotionState fallMotionState = new DefaultMotionState(new Transform(
-	    		new Matrix4f(new Quat4f(0.0f, 0.0f, 0.0f, 1f),
-	    				new Vector3f(sphere.getPosition().x, sphere.getPosition().y, sphere.getPosition().z), 1)));
-	    Vector3f fallInertia = new Vector3f(0, 0, 0);
-        fallShape.calculateLocalInertia(1F, fallInertia);
-
-        RigidBodyConstructionInfo fallRigidBodyCI = new RigidBodyConstructionInfo(0.1f, fallMotionState, fallShape, fallInertia);
-        fallRigidBodyCI.restitution = 0.1f;
-        fallRigidBodyCI.angularDamping = 0.95f;
-        fallRigidBody = new RigidBody(fallRigidBodyCI);
-//        fallRigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
-        return fallRigidBody;
-	}
-
 	@Override
 	public void run() {
 
-		long syncTime = (long) ((1F/60F)*1000L);
+		long syncTime = (long) ((1F/120F)*1000L);
         while (!stopIssued) {
 
 			long currentTimeMillis = System.currentTimeMillis();
-            dynamicsWorld.stepSimulation(1 / 60.f, 100);
+            dynamicsWorld.stepSimulation(1 / 120.f, 100);
 
             for(Map.Entry<Displayable, RigidBody> entry: things.entrySet()) {
             	Displayable displayable = entry.getKey();
@@ -154,9 +128,6 @@ public class PhysicThread extends Thread {
 	            transform.getOpenGLMatrix(matrix);
 	            if(displayable instanceof Box) {
 	            	((Box) displayable).putTransformMatrix(matrix);
-	            }
-	            if(displayable instanceof MySphere) {
-	            	((MySphere) displayable).putTransformMatrix(matrix);
 	            }
 	            if(displayable instanceof Orb) {
 	            	Orb orb = (Orb) displayable;
@@ -183,22 +154,19 @@ public class PhysicThread extends Thread {
             		Vector3f force2 = new Vector3f(mag2.getAbsolutePosition(orb2.getTransform()));
             		force2.sub(mag1.getAbsolutePosition(orb1.getTransform()));
 
-            		// shit begins
-            		float f = Magnet.MAX_FORCE / (Magnet.MAX_FORCE - getDistance(new Vector3f(), force1));
+            		float normaizer = Magnet.MAX_FORCE / (getDistance(new Vector3f(), force1));
+            		float f = normaizer * (Magnet.MAX_FORCE - getDistance(new Vector3f(), force1)) / Magnet.MAX_FORCE;
             		force1.scale(f);
             		force2.scale(f);
-            		// shit ends
-
-            		things.get(orb1).applyForce(force1, mag1.getPosition());
-            		things.get(orb2).applyForce(force2, mag2.getPosition());
-
-            		System.out.println("Force: " + f + " " + getDistance(force1, new Vector3f()));
+            		things.get(orb1).applyForce(force2, mag1.getPosition());
+            		things.get(orb2).applyForce(force1, mag2.getPosition());
             	}
             }
 
             long currentTimeMillis2 = System.currentTimeMillis();
             try {
             	long sleepTime = (syncTime - (currentTimeMillis2 - currentTimeMillis));
+//            	System.out.println("sleep: " + sleepTime);
 				Thread.sleep(sleepTime >= 0 ? sleepTime : 0);
 			} catch (InterruptedException e) {
 				e.printStackTrace();

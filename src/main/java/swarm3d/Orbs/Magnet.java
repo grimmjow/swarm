@@ -28,7 +28,7 @@ public class Magnet implements Displayable {
 	private Vector3f	position;
 	private Color color;
 
-	public final static float MAX_FORCE = 10;
+	public final static float MAX_FORCE = 30;
 
 
 	public Magnet(Vector3f position, SphereShape sphereShape, Color color) {
